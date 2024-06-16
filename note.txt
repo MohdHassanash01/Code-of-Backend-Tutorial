@@ -1,0 +1,327 @@
+lecture 2
+
+
+
+
+lecture 7
+
+npm init 
+npm i express 
+
+create folder > file > file
+public        > temp > .gitkeep
+
+
+create file .gitignore
+
+create file .env
+envirnment variable file jab bhi ham loog production me push kare ge.  envirnment variable system se uthaye gate hai taki ye secure rhe 
+
+create folder in root => src 
+create file app.js in src 
+create file constant.js in src 
+create file index.js in src 
+
+devdependency wo dependency hoti hai jo ham devlopment ke duraan use kare gye product me ham loog nhi le kar jate hai 
+
+npm i -D nodemon 
+
+change in package.json 
+script > "dev":"nodemon src/index.js"
+
+
+
+create folder in src for proper product setup
+controllers db middlewares models routes utils 
+
+jo bhi functionality bar bar repeat hogi use ham file folder me rakh dete hai
+
+
+npm i -D prettier  
+prettier bhi ek devdependency hai 
+prettier ke liye aap ko kai file add karni padti hai 
+
+create file  .prettierrc and write this code 
+
+{
+    "singleQuote":false, // har jagha double quote hi use hogaa
+
+    "bracketSpacing": true, // kitni bracketSpacing honi chahiye 
+
+    "tabWidth": 2, // tab ki width kya honi chahiye 
+
+    "trailingComma": "es5",
+    "semi": true  // semicolon chahiye ya nhi chahiye
+}
+
+create one more file for prettier  (.prettierignore)  and add this code 
+
+/.vscode
+/node_module
+./dist
+
+*.env
+.env
+.env.*
+
+
+lecture 8 
+
+database setup karo online
+setting up in atlas mongodb
+
+write the code in .env file 
+PORT=8000
+MONGODB_URI=mongodb+srv://hasanAshraf:ashraf123@cluster0.anzwxko.mongodb.net
+
+sari variable envirnment variable se load karane wale ho is liye install karo 
+
+npm i dotenv
+
+
+go add the name of database in constant
+export const DB_NAME = 'videotube'
+agar future me change karna ho to aasani se change karlo warna hazaar jagah change karo 
+
+
+database connect ke major two tarike hai 
+
+npm i express mongoose cors
+database se jab bhi aap baat karne ki koshish kare gye to problem aa sakti hai 
+
+try catch ka use karo 
+then catch ka use karo 
+database is always in another continent iska matlab async await ka use karna padta hai 
+
+app.js me express ka code ho ga 
+database connection hoga mongoose ke through
+
+
+package.json me jake ke code script me add karo 
+  "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
+
+
+  lecture 9 
+
+  write code in app.js
+
+import express from 'express'
+const app = express()
+
+export {app}
+
+npm i cors cookie-parser
+
+add middlewares in app.js
+
+app.use(cors({
+    origin:process.env.CORS_ORIGIN,
+    credentials:true
+}))
+
+app.use(express.json({limit:'16kb'}))  // jab data form se aaye
+app.use(express.urlencoded({extended:true,limit:'16kb'}))  // jab data url se aaye
+
+app.use(express.static("public")) // images vedio public me store kar sakte hai  
+
+app.use(cookieParser())
+
+
+and create a file in utils is asyncHandler.js 
+is kaam har baar ham logo ko code likna padta hai isse nipatne ke liye ham loog ek rapper built kar dege , jab bhi app ko is tarike se function execute karna ho to app apna function pass kardena apko execute karke wapas karde ga
+
+
+write this code 
+
+// const asyncHandler = (func) => async (req,res,next) => {
+//     try {
+//         await func(req,res,next)
+//     } catch (error) {
+//         res.status(err.code || 500).json({
+//             success: false,
+//             message:err.message
+//         })
+//     }
+// }
+
+export {asyncHandler}
+
+
+create another file for error handling 
+Apierror.js
+
+write this code 
+
+class API extends Error{
+    constructor (
+        statusCode,
+        message= "Simething went wrong",
+        errors=[],
+        stack=''
+    ){
+super(message)
+this.statusCode = statusCode
+this.data = null
+this.message = message
+this.success = false
+this.errors = errors
+
+if (stack) {
+    this.stack = stack
+}else{
+    Error.captureStackTrace(this,this.constructor)
+}
+    }
+}
+
+export {ApiError}
+
+
+lecture 10 
+
+create files in models
+user.model.js
+video.model.js
+
+create model in user.model.js
+
+mongoose ka ek special package install karo 
+ye package production me use hota iske pass super power hai 
+
+
+mongoose-aggregate-paginate package ka use tab hota hai jab aapko apne database se aggregated data ko paginate karna hota hai. Yeh bahut useful hai jab aap large datasets ko handle kar rahe hote ho aur unko manageable chunks mein dikhana chahte ho. Yeh kuch common scenarios hain jaha aap is package ka use kar sakte ho:
+
+aggregation query kya hoti hai ?
+
+Aggregation query MongoDB mein ek powerful feature hai jo aapko complex data processing karne ke liye allow karti hai. Aggregation framework aapko multiple stages mein data ko process karne ke liye enable karta hai, jisme filtering, sorting, grouping, reshaping, aur data transformation hoti hai. Yeh stages ek pipeline ke form mein execute hoti hain.
+
+install another package 
+npm i brcypt jsonwebtoken
+
+brcypt password ko hash karne me help karta hai 
+
+Password hashing ek technique hai jisme password ko ek fixed-length string (hash) mein convert kiya jata hai, jise secure manner mein store aur verify kiya ja sakta hai. Hashing function ek one-way function hota hai, matlab input (password) se hash generate kar sakte hain, lekin hash se original password ko reverse nahi kar sakte.
+
+and write this code in user.model.js
+
+userSchema.pre("save",async function(next){
+
+    if(!this.isModified("password")) return next()
+
+    this.password = bcrypt.hash(this.password,10)
+    next()
+  
+})
+
+
+userSchema.methods.ispasswordCorrect = async function(password){
+    return bcrypt.compare(password,this.password)
+}
+
+
+and code in .env 
+
+ACCESS_TOKEN_SECRET=CHAIAURCODE098HASSAN0786
+ACCESS_TOKEN_EXPIRY =1d
+
+REFRESH_TOKEN_SECRET=CHAIAURCODE123ASHRAF07865
+REFRESH_TOKEN_EXPIRY=10d
+
+REFRESH_TOKEN database me store hota hai 
+
+
+write code in user.model,js
+
+userSchema.methods.generateAccessToken = function(){
+  return  jwt.sign({
+        _id:this._id,
+        email:this.email,
+        username:this.username,
+        fullname:this.fullname
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+        expiresIn:process.env.ACCESS_TOKEN_EXPIRY
+    }
+)
+}
+
+
+
+userSchema.methods.generateRefreshToken = function(){
+    return  jwt.sign({
+        _id:this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+        expiresIn:process.env.REFRESH_TOKEN_EXPIRY
+    }
+)}
+
+
+lecture 11
+
+cloudnary 
+
+install some packages 
+
+npm i cloudinary
+npm i multer 
+
+
+add code in .evn 
+cloudinary name secret key
+
+CLOUDINARY_CLOUD_NAME=dx9i18qea
+CLOUDINARY_API_KEY=873165977354357
+CLOUDINARY_API_SECRET=CPEwReEne2blyZXZrUf9cjlgY34
+
+write code in cloudinary.js
+
+and write the code of multer in multer.middlewares.js
+
+import multer from 'multer'
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, "./public/temp")
+    },
+    filename: function (req, file, cb) {
+      
+      cb(null, file.originalname + '-' + uniqueSuffix)
+    }
+  })
+  
+ export const upload = multer({ 
+     storage,
+     })
+
+
+//+++++++++++++++++++++++++++++++++++
+
+ lecture 12 
+
+ lecture 16
+
+ ACCESS token short term me expire ho jata hai
+ REFRESH  token long term me expire ho jata hai
+
+     
+
+     {
+    "statusCode": 200,
+    "data": {
+        "_id": "666d2bcf589f6fcfb7f972b1",
+        "username": "ashraf hassan",
+        "email": "hassan123@gmail.com",
+        "fullName": "Mohd hassan ashraf",
+        "avatar": "http://res.cloudinary.com/dx9i18qea/image/upload/v1718430670/aaart7c3rcvjtnphqinn.jpg",
+        "coverImage": "http://res.cloudinary.com/dx9i18qea/image/upload/v1718430673/d1rkcz0ah6uvlzekle1q.jpg",
+        "watchHistory": [],
+        "createdAt": "2024-06-15T05:51:11.182Z",
+        "updatedAt": "2024-06-15T05:51:11.182Z",
+        "__v": 0
+    },
+    "message": "User ragistered succesfully ",
+    "success": true
+}
